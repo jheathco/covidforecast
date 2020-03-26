@@ -17,6 +17,9 @@ class HomeController < ApplicationController
         row['newpositive'] = row['positive'] - positive
       end
 
+      row['hospitalizedrate'] = (row['hospitalized'].to_f / row['positive'] * 100).round(2)
+      row['deathrate'] = (row['death'].to_f / row['positive'] * 100).round(2)
+
       positive = row['positive']
       death = row['death']
       hospitalized = row['hospitalized']
@@ -31,16 +34,20 @@ class HomeController < ApplicationController
     end
 
     growthrate = growthrates.ema.round(2)
+    hospitalizedrate = @data.first['hospitalizedrate']
+    deathrate = @data.first['deathrate']
 
-    (@data.first['date']..(@data.first['date'] + 14.days)).each do |date|
+    ((@data.first['date'] + 1.day)..(@data.first['date'] + 14.days)).each do |date|
       positive *= (100 + growthrate) / 100
 
       record = {
         'date' => date,
         'positive' => positive.round,
         'newpositive' => positive.round - @data.first['positive'],
-        'hospitalized' => 50,
-        'death' => 20,
+        'hospitalized' => (positive * hospitalizedrate / 100).round,
+        'hospitalizedrate' => hospitalizedrate,
+        'death' => (positive * deathrate / 100).round,
+        'deathrate' => deathrate,
         'growthrate' => growthrate
       }
 
