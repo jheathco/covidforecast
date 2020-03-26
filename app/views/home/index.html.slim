@@ -49,7 +49,7 @@ table.table.table-striped
       th Rate (%)
   - @data.each do |day|
     tr
-      td= day['date'].strftime('%Y-%m-%d')
+      td= day['date'].strftime('%Y/%m/%d')
       td= number_with_delimiter(day['positive'])
       td= number_with_delimiter(day['newpositive'])
       td= day['growthrate']
