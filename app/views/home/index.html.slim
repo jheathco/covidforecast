@@ -1,0 +1,19 @@
+table.table.table-striped
+  thead
+    tr
+      th Date
+      th Cases
+      th New Cases
+      th Growth (%)
+      th Growth EMA (%)
+      th Hospitalizations
+      th Deaths
+  - @data.each do |day|
+    tr
+      td= day['date'].strftime('%Y-%m-%d')
+      td= number_with_delimiter(day['positive'])
+      td= number_with_delimiter(day['newpositive'])
+      td= day['growthrate']
+      td= day['growthrateema']
+      td= number_with_delimiter(day['hospitalized'])
+      td= number_with_delimiter(day['death'])
