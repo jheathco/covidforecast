@@ -1,3 +1,40 @@
+.alert.alert-primary
+  h4.mb-4 COVID-19 Forecaster using live data from <a href="http://covidtracking.com/">covidtracking.com</a>.
+  #parameters
+    form
+      .form-group
+        label for="days" Number of days to forecast
+        select.form-control name="days" data-value=params[:days]
+          option 7
+          option 14
+          option 30
+          option 60
+          option 90
+          option 120
+          option 150
+          option 180
+      .form-group
+        label for="avg" Growth moving average
+        select.form-control name="avg" data-value=params[:avg]
+          option value="sma-1" Previous day
+          option value="sma-2" 2 day SMA
+          option value="sma-3" 3 day SMA
+          option value="sma-4" 4 day SMA
+          option value="sma-5" 5 day SMA
+          option value="ema-2" 2 day EMA
+          option value="ema-3" 3 day EMA
+          option value="ema-4" 4 day EMA
+          option value="ema-5" 5 day EMA
+      .form-group
+        label for="slowing" Slowing factor (e.g. distancing)
+        select.form-control name="slowing" data-value=params[:slowing]
+          - (0..95).step(5) do |n|
+            option value=n = "#{n}%"
+      button.btn.btn-primary type="submit" Update
+
+
+
+
 table.table.table-striped
   thead
     tr

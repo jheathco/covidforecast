@@ -1,5 +1,19 @@
 class HomeController < ApplicationController
   def index
+    params[:days] ||= 14
+    params[:days] = [params[:days].to_i, 180].min
+    params[:avg] ||= 'ema-3'
+    params[:slowing] ||= 0
+    params[:slowing] = [params[:slowing].to_i, 95].min
+
+    if params[:avg][0..2] == 'sma'
+      avg = :sma
+    else
+      avg = :ema
+    end
+
+    avgdays = params[:avg][4].to_i || 3
+
     response = HTTParty.get('https://covidtracking.com/api/us/daily')
     @data = JSON.parse(response.body)
 
@@ -10,7 +24,7 @@ class HomeController < ApplicationController
     growthrates = []
 
     @data.reverse.each_with_index do |row, i|
-      row['date'] = DateTime.new(row['date'].to_s[0..3].to_i, row['date'].to_s[4..5].to_i, row['date'].to_s[6..7].to_i)
+      row['date'] = DateTime.parse(row['dateChecked'])
 
       if i > 0
         row['growthrate'] = ((row['positive'].to_f - positive) / positive * 100).round(2)
@@ -25,7 +39,7 @@ class HomeController < ApplicationController
       hospitalized = row['hospitalized']
       growthrate = row['growthrate']
 
-      growthrates.shift if growthrates.count > 3
+      growthrates.shift if growthrates.count > avgdays
 
       growthrates << growthrate if growthrate
 
@@ -33,12 +47,17 @@ class HomeController < ApplicationController
       row['growthrateema'] = growthrates.ema.round(2) if growthrates.count > 0
     end
 
-    growthrate = growthrates.ema.round(2)
+    if avg == :sma
+      growthrate = growthrates.sma.round(2)
+    else
+      growthrate = growthrates.ema.round(2)
+    end
+
     hospitalizedrate = @data.first['hospitalizedrate']
     deathrate = @data.first['deathrate']
 
-    ((@data.first['date'] + 1.day)..(@data.first['date'] + 14.days)).each do |date|
-      positive *= (100 + growthrate) / 100
+    ((@data.first['date'] + 1.day)..(@data.first['date'] + params[:days].days)).each do |date|
+      positive += positive * (growthrate / 100) * (1 - params[:slowing].to_f / 100)
 
       record = {
         'date' => date,
