@@ -33,7 +33,7 @@ canvas id="chart"
       .form-group
         label for="slowing" Slowing factor (e.g. distancing)
         select.form-control name="slowing" data-value=params[:slowing]
-          - (0..95).step(5) do |n|
+          - (0..30).step(1) do |n|
             option value=n = "#{n}%"
       button.btn.btn-primary type="submit" Update
 
