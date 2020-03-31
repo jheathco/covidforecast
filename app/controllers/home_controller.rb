@@ -6,6 +6,8 @@ class HomeController < ApplicationController
     params[:slowing] ||= 0
     params[:slowing] = [params[:slowing].to_i, 95].min
 
+    population = 350000000
+
     if params[:avg][0..2] == 'sma'
       avg = :sma
     else
@@ -73,6 +75,26 @@ class HomeController < ApplicationController
       @data.insert(0, record)
 
       prev = @data.last
+
+      if positive >= population / 2
+        break
+      end
+    end
+
+    gon.dates = []
+    gon.newpositives = []
+    gon.positives = []
+    gon.colors = []
+
+    @data.reverse.each do |r|
+      gon.dates << r['date'].strftime('%Y-%m-%d')
+      gon.newpositives << r['newpositive']
+      gon.positives << r['positive']
+      if r['growthrateema']
+        gon.colors << 'rgba(133,133,133,0.2)'
+      else
+        gon.colors << 'rgba(0,120,120,0.2)'
+      end
     end
   end
 end

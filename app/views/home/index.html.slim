@@ -1,5 +1,8 @@
+canvas id="chart"
+
 .alert.alert-primary
-  h4.mb-4 COVID-19 Forecaster using live data from <a href="http://covidtracking.com/">covidtracking.com</a>.
+  h4 COVID-19 Forecaster using live data from <a href="http://covidtracking.com/">covidtracking.com</a>.
+  .mb-4 You can <a href="#details">view details<a> on how this model functions.
   #parameters
     form
       .form-group
@@ -32,9 +35,6 @@
             option value=n = "#{n}%"
       button.btn.btn-primary type="submit" Update
 
-
-
-
 table.table.table-striped
   thead
     tr
@@ -58,3 +58,33 @@ table.table.table-striped
       td= day['hospitalizedrate']
       td= number_with_delimiter(day['death'])
       td= day['deathrate']
+
+#details.alert.alert-warning This model pulls live data from covidtracking.com and extrapolates using a moving average from previous days' growth rates. The modeler uses a population cap of 350M and stops forecasting after 175M infections (approximate end of exponential growth phase). Death and hospitalization rates are held constant and use the most recent live data.
+
+javascript:
+  $(document).ready(function() {
+    var chart = new Chart($('#chart'), {
+        "type": "bar",
+        "data": {
+            "labels": gon.dates,
+            "datasets": [{
+                "label": "New Cases",
+                "data": gon.newpositives,
+                "fill": false,
+                "borderWidth": 1,
+                "backgroundColor": gon.colors
+            }]
+        },
+        "options": {
+            "scales": {
+                "yAxes": [{
+                    "ticks": {
+                        "beginAtZero": true
+                    }
+                }]
+            }
+        }
+    });
+  });
+
+
