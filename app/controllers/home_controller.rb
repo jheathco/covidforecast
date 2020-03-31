@@ -2,13 +2,13 @@ class HomeController < ApplicationController
   def index
     params[:days] ||= 14
     params[:days] = [params[:days].to_i, 180].min
-    params[:avg] ||= 'ema-3'
+    params[:avg] ||= 'sma-60'
     params[:slowing] ||= 0
     params[:slowing] = [params[:slowing].to_i, 95].min
 
     population = 350000000
 
-    if params[:avg][0..2] == 'sma'
+    if params[:avg][0..90] == 'sma'
       avg = :sma
     else
       avg = :ema
@@ -20,6 +20,7 @@ class HomeController < ApplicationController
     @data = JSON.parse(response.body)
 
     positive = 0
+    newpositive = 0
     hospitalized = 0
     death = 0
     growthrate = 0
@@ -28,15 +29,20 @@ class HomeController < ApplicationController
     @data.reverse.each_with_index do |row, i|
       row['date'] = DateTime.parse(row['dateChecked'])
 
-      if i > 0
-        row['growthrate'] = ((row['positive'].to_f - positive) / positive * 100).round(2)
+      if i == 0
+        row['newpositive'] = positive
+      else
         row['newpositive'] = row['positive'] - positive
+
+        # Use growth rate of new daily cases
+        row['growthrate'] = ((row['newpositive'].to_f - newpositive) / newpositive * 100).round(2)
       end
 
       row['hospitalizedrate'] = (row['hospitalized'].to_f / row['positive'] * 100).round(2)
       row['deathrate'] = (row['death'].to_f / row['positive'] * 100).round(2)
 
       positive = row['positive']
+      newpositive = row['newpositive']
       death = row['death']
       hospitalized = row['hospitalized']
       growthrate = row['growthrate']
@@ -59,7 +65,10 @@ class HomeController < ApplicationController
     deathrate = @data.first['deathrate']
 
     ((@data.first['date'] + 1.day)..(@data.first['date'] + params[:days].days)).each do |date|
-      positive += positive * (growthrate / 100) * (1 - params[:slowing].to_f / 100)
+      newpositive = newpositive * (1 + growthrate / 100) * (1 - params[:slowing].to_f / 100)
+
+      #positive += positive * (growthrate / 100) * (1 - params[:slowing].to_f / 100)
+      positive += newpositive
 
       record = {
         'date' => date,

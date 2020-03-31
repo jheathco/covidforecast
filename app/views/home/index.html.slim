@@ -20,14 +20,16 @@ canvas id="chart"
         label for="avg" Growth moving average
         select.form-control name="avg" data-value=params[:avg]
           option value="sma-1" Previous day
-          option value="sma-2" 2 day SMA
-          option value="sma-3" 3 day SMA
-          option value="sma-4" 4 day SMA
           option value="sma-5" 5 day SMA
-          option value="ema-2" 2 day EMA
-          option value="ema-3" 3 day EMA
-          option value="ema-4" 4 day EMA
+          option value="sma-15" 15 day SMA
+          option value="sma-30" 30 day SMA
+          option value="sma-60" 60 day SMA
+          option value="sma-90" 90 day SMA
           option value="ema-5" 5 day EMA
+          option value="ema-15" 15 day EMA
+          option value="ema-35" 30 day EMA
+          option value="ema-60" 60 day EMA
+          option value="ema-90" 90 day EMA
       .form-group
         label for="slowing" Slowing factor (e.g. distancing)
         select.form-control name="slowing" data-value=params[:slowing]
