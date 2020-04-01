@@ -1,4 +1,14 @@
-canvas id="chart"
+ul.nav.nav-tabs
+  li.nav-item
+    a.nav-link.active data-toggle="tab" href="#newpositive-tab"  Daily Cases
+  li.nav-item
+    a.nav-link data-toggle="tab" href="#positive-tab" Total Cases
+
+#charts.tab-content
+  #newpositive-tab.tab-pane.show.active
+    canvas id="newpositive"
+  #positive-tab.tab-pane
+    canvas id="positive"
 
 .alert.alert-primary
   h4 COVID-19 Forecaster using live data from <a href="http://covidtracking.com/">covidtracking.com</a>.
@@ -16,6 +26,7 @@ canvas id="chart"
           option 120
           option 150
           option 180
+          option 365
       .form-group
         label for="avg" Growth moving average
         select.form-control name="avg" data-value=params[:avg]
@@ -35,6 +46,19 @@ canvas id="chart"
         select.form-control name="slowing" data-value=params[:slowing]
           - (0..30).step(1) do |n|
             option value=n = "#{n}%"
+      .form-group
+        label for="delay" Slowing factor delay (days)
+        select.form-control name="delay" data-value=params[:delay]
+          - (0..30).step(1) do |n|
+            option= n
+      .form-group
+        label for="length" Slowing factor length (weeks)
+        select.form-control name="length" data-value=params[:length]
+          - (0..12).step(1) do |n|
+            - if n == 0
+              option value="-1" Indefinite
+            - else
+              option= n
       button.btn.btn-primary type="submit" Update
 
 table.table.table-striped
@@ -65,13 +89,36 @@ table.table.table-striped
 
 javascript:
   $(document).ready(function() {
-    var chart = new Chart($('#chart'), {
+    var chart = new Chart($('#newpositive'), {
         "type": "bar",
         "data": {
             "labels": gon.dates,
             "datasets": [{
                 "label": "New Cases",
                 "data": gon.newpositives,
+                "fill": false,
+                "borderWidth": 1,
+                "backgroundColor": gon.colors
+            }]
+        },
+        "options": {
+            "scales": {
+                "yAxes": [{
+                    "ticks": {
+                        "beginAtZero": true
+                    }
+                }]
+            }
+        }
+    });
+
+    var chart = new Chart($('#positive'), {
+        "type": "bar",
+        "data": {
+            "labels": gon.dates,
+            "datasets": [{
+                "label": "Cases",
+                "data": gon.positives,
                 "fill": false,
                 "borderWidth": 1,
                 "backgroundColor": gon.colors

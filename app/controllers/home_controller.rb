@@ -1,10 +1,14 @@
 class HomeController < ApplicationController
   def index
     params[:days] ||= 14
-    params[:days] = [params[:days].to_i, 180].min
+    params[:days] = [params[:days].to_i, 365].min
     params[:avg] ||= 'sma-60'
     params[:slowing] ||= 0
     params[:slowing] = [params[:slowing].to_i, 95].min
+    params[:delay] ||= 0
+    params[:delay] = [params[:delay].to_i, 30].min
+    params[:length] ||= -1
+    params[:length] = [params[:length].to_i, -1].max
 
     population = 350000000
 
@@ -64,10 +68,16 @@ class HomeController < ApplicationController
     hospitalizedrate = @data.first['hospitalizedrate']
     deathrate = @data.first['deathrate']
 
-    ((@data.first['date'] + 1.day)..(@data.first['date'] + params[:days].days)).each do |date|
-      newpositive = newpositive * (1 + growthrate / 100) * (1 - params[:slowing].to_f / 100)
+    period = params[:length] * 7
 
-      #positive += positive * (growthrate / 100) * (1 - params[:slowing].to_f / 100)
+    ((@data.first['date'] + 1.day)..(@data.first['date'] + params[:days].days)).each_with_index do |date, i|
+      if i < params[:delay] or period == 0
+        newpositive = newpositive * (1 + growthrate / 100)
+      else
+        newpositive = newpositive * (1 + growthrate / 100) * (1 - params[:slowing].to_f / 100)
+        period -= 1
+      end
+
       positive += newpositive
 
       record = {
@@ -95,14 +105,24 @@ class HomeController < ApplicationController
     gon.positives = []
     gon.colors = []
 
-    @data.reverse.each do |r|
+    i = 0
+    period = params[:length] * 7
+
+    @data.reverse.each_with_index do |r|
       gon.dates << r['date'].strftime('%Y-%m-%d')
       gon.newpositives << r['newpositive']
       gon.positives << r['positive']
       if r['growthrateema']
         gon.colors << 'rgba(133,133,133,0.2)'
       else
-        gon.colors << 'rgba(0,120,120,0.2)'
+        if i < params[:delay] or period == 0
+          gon.colors << 'rgba(120,0,0,0.2)'
+        else
+          gon.colors << 'rgba(0,120,120,0.2)'
+          period -= 1
+        end
+
+        i += 1
       end
     end
   end
