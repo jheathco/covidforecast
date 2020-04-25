@@ -9,6 +9,7 @@ class HomeController < ApplicationController
     params[:delay] = [params[:delay].to_i, 30].min
     params[:length] ||= -1
     params[:length] = [params[:length].to_i, -1].max
+    params[:state] ||= ''
 
     population = 350000000
 
@@ -20,7 +21,13 @@ class HomeController < ApplicationController
 
     avgdays = params[:avg][4].to_i || 3
 
-    response = HTTParty.get('https://covidtracking.com/api/us/daily')
+    if params[:states] != ''
+      url = "https://covidtracking.com/api/v1/states/#{params[:state]}/daily.json"
+    else
+      url = "https://covidtracking.com/api/v1/us/daily.json"
+    end
+
+    response = HTTParty.get(url)
     @data = JSON.parse(response.body)
 
     positive = 0
