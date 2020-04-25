@@ -21,7 +21,7 @@ class HomeController < ApplicationController
 
     avgdays = params[:avg][4].to_i || 3
 
-    if params[:states] != ''
+    if params[:state] != ''
       url = "https://covidtracking.com/api/v1/states/#{params[:state]}/daily.json"
     else
       url = "https://covidtracking.com/api/v1/us/daily.json"
